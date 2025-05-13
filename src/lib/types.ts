@@ -9,7 +9,7 @@ export interface User {
   department?: string;
   batch?: string;
   phoneNumber?: string;
-  parentPhoneNumber?: string;
+  parentPhoneNumber?: string; // Only tutor and admin can modify this field
 }
 
 export interface GatePass {

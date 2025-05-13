@@ -46,6 +46,9 @@ const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
     setUsers(updatedUsers);
     setEditingUser(null);
     toast.success("Parent phone number updated successfully");
+    
+    // Mock SMS notification to parent
+    toast.info(`SMS notification sent to ${phoneNumber} about the update`);
   };
   
   const handleCancel = () => {
@@ -77,7 +80,9 @@ const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell>
-                  <Badge className="capitalize">{user.role}</Badge>
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground capitalize">
+                    {user.role}
+                  </span>
                 </TableCell>
                 <TableCell>{user.department || "-"}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -136,15 +141,6 @@ const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
         </TableBody>
       </Table>
     </div>
-  );
-};
-
-// Add missing Badge component
-const Badge = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-  return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground ${className}`}>
-      {children}
-    </span>
   );
 };
 

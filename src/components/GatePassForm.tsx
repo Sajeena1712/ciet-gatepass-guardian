@@ -71,7 +71,18 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
     
     // Simulate API delay
     setTimeout(() => {
+      // Submit the gate pass
       onSubmit(newGatePass);
+      
+      // Simulate SMS notification to parent
+      if (user.parentPhoneNumber) {
+        // Mock parent SMS notification
+        toast.info(`SMS notification sent to parent at ${user.parentPhoneNumber}`);
+      } else {
+        toast.warning("Parent phone number not available. Cannot send SMS notification.");
+      }
+      
+      // Reset form
       setReason("");
       setFromDate("");
       setToDate("");
@@ -123,6 +134,19 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
               />
             </div>
           </div>
+          
+          {user.parentPhoneNumber ? (
+            <div className="bg-green-50 p-3 rounded-md text-sm border border-green-200">
+              <p className="font-medium text-green-800">Parent Contact Information:</p>
+              <p className="text-green-700 mt-1">Parent phone number: {user.parentPhoneNumber}</p>
+              <p className="text-gray-500 mt-1">SMS notification will be sent to this number when you submit.</p>
+            </div>
+          ) : (
+            <div className="bg-amber-50 p-3 rounded-md text-sm border border-amber-200">
+              <p className="font-medium text-amber-800">No parent phone number registered</p>
+              <p className="text-amber-700 mt-1">Please contact your tutor to update your parent's contact information.</p>
+            </div>
+          )}
           
           <div className="bg-muted p-3 rounded-md text-sm">
             <p className="font-medium">Note:</p>
