@@ -7,7 +7,7 @@ import {
   Wifi, 
   Utensils, 
   Thermometer, 
-  Shower, 
+  Bath, 
   Shirt 
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,7 @@ const FacilityCard = ({ facility }: FacilityCardProps) => {
       case 'bed':
         return <Bed className="h-6 w-6 text-ciet-blue" />;
       case 'shower':
-        return <Shower className="h-6 w-6 text-ciet-blue" />;
+        return <Bath className="h-6 w-6 text-ciet-blue" />;
       case 'book':
         return <Book className="h-6 w-6 text-ciet-blue" />;
       case 'washing-machine':
