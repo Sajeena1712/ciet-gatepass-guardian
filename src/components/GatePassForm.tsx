@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +13,11 @@ interface GatePassFormProps {
 }
 
 const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
+  // Initialize with default test phone if not available
+  const effectiveUser = user.parentPhoneNumber ? 
+    user : 
+    { ...user, parentPhoneNumber: "8778136006" };
+  
   const [reason, setReason] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -47,10 +51,10 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
     setLoading(true);
     
     const newGatePass: Partial<GatePass> = {
-      studentId: user.id,
-      studentName: user.name,
-      department: user.department || "",
-      batch: user.batch || "",
+      studentId: effectiveUser.id,
+      studentName: effectiveUser.name,
+      department: effectiveUser.department || "",
+      batch: effectiveUser.batch || "",
       reason,
       fromDate,
       toDate,
@@ -74,13 +78,11 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
       // Submit the gate pass
       onSubmit(newGatePass);
       
-      // Simulate SMS notification to parent
-      if (user.parentPhoneNumber) {
-        // Mock parent SMS notification
-        toast.info(`SMS notification sent to parent at ${user.parentPhoneNumber}`);
-      } else {
-        toast.warning("Parent phone number not available. Cannot send SMS notification.");
-      }
+      // Always show SMS notification with the test number
+      toast.success(`SMS notification sent to parent at ${effectiveUser.parentPhoneNumber}`, {
+        duration: 5000,
+        position: "top-center"
+      });
       
       // Reset form
       setReason("");
@@ -135,18 +137,12 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
             </div>
           </div>
           
-          {user.parentPhoneNumber ? (
-            <div className="bg-green-50 p-3 rounded-md text-sm border border-green-200">
-              <p className="font-medium text-green-800">Parent Contact Information:</p>
-              <p className="text-green-700 mt-1">Parent phone number: {user.parentPhoneNumber}</p>
-              <p className="text-gray-500 mt-1">SMS notification will be sent to this number when you submit.</p>
-            </div>
-          ) : (
-            <div className="bg-amber-50 p-3 rounded-md text-sm border border-amber-200">
-              <p className="font-medium text-amber-800">No parent phone number registered</p>
-              <p className="text-amber-700 mt-1">Please contact your tutor to update your parent's contact information.</p>
-            </div>
-          )}
+          <div className="bg-green-50 p-3 rounded-md text-sm border border-green-200">
+            <p className="font-medium text-green-800">Parent Contact Information:</p>
+            <p className="text-green-700 mt-1">Parent phone number: {effectiveUser.parentPhoneNumber}</p>
+            <p className="text-gray-500 mt-1">SMS notification will be sent to this number when you submit.</p>
+            <p className="text-blue-600 font-medium mt-2">TEST NUMBER ACTIVE: 8778136006</p>
+          </div>
           
           <div className="bg-muted p-3 rounded-md text-sm">
             <p className="font-medium">Note:</p>

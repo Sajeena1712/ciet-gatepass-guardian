@@ -19,7 +19,15 @@ interface UserManagementProps {
 }
 
 const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  // Add the test phone number as default when empty
+  const usersWithDefaultPhones = initialUsers.map(user => {
+    if (user.role === "student" && !user.parentPhoneNumber) {
+      return { ...user, parentPhoneNumber: "8778136006" };
+    }
+    return user;
+  });
+  
+  const [users, setUsers] = useState<User[]>(usersWithDefaultPhones);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   
