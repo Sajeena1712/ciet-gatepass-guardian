@@ -57,6 +57,7 @@ const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
     
     // Mock SMS notification to parent
     toast.info(`SMS notification sent to ${phoneNumber} about the update`);
+    console.log(`SIMULATED: SMS notification would be sent to ${phoneNumber} about contact update`);
   };
   
   const handleCancel = () => {

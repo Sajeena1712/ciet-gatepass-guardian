@@ -8,17 +8,19 @@ import { toast } from "sonner";
 import { GatePass, User } from "@/lib/types";
 import ApprovalQueue from "@/components/ApprovalQueue";
 import LeaveHistory from "@/components/LeaveHistory";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon, Database } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { getAllGatePasses, getPendingApprovalsByRole, updateGatePass } from "@/services/gatePassService";
+import DatabaseViewer from "@/components/DatabaseViewer";
 
 const HodDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [gatePasses, setGatePasses] = useState<GatePass[]>([]);
   const [selectedPass, setSelectedPass] = useState<GatePass | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showDatabaseDialog, setShowDatabaseDialog] = useState(false);
   const [comments, setComments] = useState("");
   const navigate = useNavigate();
   
@@ -55,11 +57,11 @@ const HodDashboard = () => {
     const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
     if (passToUpdate) {
-      const updatedPass = {
+      const updatedPass: GatePass = {
         ...passToUpdate,
-        status: "approved", // Final approval
+        status: "approved" as const, // Type assertion to fix the error
         hodApproval: {
-          status: "approved",
+          status: "approved" as const, // Type assertion to fix the error
           timestamp: new Date().toISOString(),
           comments: comments || "Approved",
           approvedBy: user?.name || ""
@@ -87,11 +89,11 @@ const HodDashboard = () => {
     const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
     if (passToUpdate) {
-      const updatedPass = {
+      const updatedPass: GatePass = {
         ...passToUpdate,
-        status: "rejected",
+        status: "rejected" as const, // Type assertion to fix the error
         hodApproval: {
-          status: "rejected",
+          status: "rejected" as const, // Type assertion to fix the error
           timestamp: new Date().toISOString(),
           comments: comments || "Rejected",
           approvedBy: user?.name || ""
@@ -139,6 +141,14 @@ const HodDashboard = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-blue-700"
+              onClick={() => setShowDatabaseDialog(true)}
+            >
+              <Database className="h-5 w-5 mr-2" />
+              <span className="hidden md:inline">View Database</span>
+            </Button>
             <div className="hidden md:flex items-center space-x-2">
               <UserIcon className="h-5 w-5" />
               <span>{user.name} (HOD)</span>
@@ -317,6 +327,19 @@ const HodDashboard = () => {
               Approve
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Database Viewer Dialog */}
+      <Dialog open={showDatabaseDialog} onOpenChange={setShowDatabaseDialog}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Database Viewer (localStorage)</DialogTitle>
+            <DialogDescription>
+              View the simulated database content stored in your browser's localStorage
+            </DialogDescription>
+          </DialogHeader>
+          <DatabaseViewer />
         </DialogContent>
       </Dialog>
     </div>
