@@ -1,22 +1,33 @@
 
-import { GatePass } from "@/lib/types";
+import { GatePass, User } from "@/lib/types";
 import { mockGatePasses } from "@/lib/mockData";
 
-const LOCAL_STORAGE_KEY = "gate_passes";
+const GATE_PASSES_KEY = "gate_passes";
+const STUDENT_CREDENTIALS_KEY = "student_credentials";
 
 // Initialize localStorage with mock data if empty
 const initializeStorage = (): void => {
-  const storedPasses = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const storedPasses = localStorage.getItem(GATE_PASSES_KEY);
   
   if (!storedPasses) {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mockGatePasses));
+    localStorage.setItem(GATE_PASSES_KEY, JSON.stringify(mockGatePasses));
+  }
+  
+  // Initialize student credentials with a sample student
+  const storedCredentials = localStorage.getItem(STUDENT_CREDENTIALS_KEY);
+  
+  if (!storedCredentials) {
+    const sampleCredentials = [
+      { rollNo: "22bcs001", password: "22bcs001", name: "Sample Student", department: "Computer Science", batch: "2022-26" }
+    ];
+    localStorage.setItem(STUDENT_CREDENTIALS_KEY, JSON.stringify(sampleCredentials));
   }
 };
 
 // Get all gate passes
 export const getAllGatePasses = (): GatePass[] => {
   initializeStorage();
-  const passes = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const passes = localStorage.getItem(GATE_PASSES_KEY);
   return passes ? JSON.parse(passes) : [];
 };
 
@@ -24,7 +35,7 @@ export const getAllGatePasses = (): GatePass[] => {
 export const addGatePass = (newPass: GatePass): GatePass => {
   const passes = getAllGatePasses();
   passes.unshift(newPass); // Add to beginning of array
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(passes));
+  localStorage.setItem(GATE_PASSES_KEY, JSON.stringify(passes));
   return newPass;
 };
 
@@ -34,7 +45,7 @@ export const updateGatePass = (updatedPass: GatePass): GatePass => {
   const updatedPasses = passes.map(pass => 
     pass.id === updatedPass.id ? updatedPass : pass
   );
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedPasses));
+  localStorage.setItem(GATE_PASSES_KEY, JSON.stringify(updatedPasses));
   return updatedPass;
 };
 
@@ -63,4 +74,42 @@ export const getPendingApprovalsByRole = (role: "tutor" | "warden" | "hod"): Gat
   }
   
   return [];
+};
+
+// Student credentials management
+interface StudentCredential {
+  rollNo: string;
+  password: string;
+  name: string;
+  department: string;
+  batch: string;
+}
+
+// Get all student credentials
+export const getAllStudentCredentials = (): StudentCredential[] => {
+  initializeStorage();
+  const credentials = localStorage.getItem(STUDENT_CREDENTIALS_KEY);
+  return credentials ? JSON.parse(credentials) : [];
+};
+
+// Add a new student credential
+export const addStudentCredential = (credential: StudentCredential): StudentCredential => {
+  const credentials = getAllStudentCredentials();
+  // Check if the roll number already exists
+  const exists = credentials.some(cred => cred.rollNo === credential.rollNo);
+  
+  if (exists) {
+    throw new Error("Roll number already exists");
+  }
+  
+  credentials.push(credential);
+  localStorage.setItem(STUDENT_CREDENTIALS_KEY, JSON.stringify(credentials));
+  return credential;
+};
+
+// Verify student login
+export const verifyStudentLogin = (rollNo: string, password: string): StudentCredential | null => {
+  const credentials = getAllStudentCredentials();
+  const student = credentials.find(cred => cred.rollNo === rollNo && cred.password === password);
+  return student || null;
 };
