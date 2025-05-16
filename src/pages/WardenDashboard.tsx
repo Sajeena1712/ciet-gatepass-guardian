@@ -55,10 +55,10 @@ const WardenDashboard = () => {
     const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
     if (passToUpdate) {
-      const updatedPass = {
+      const updatedPass: GatePass = {
         ...passToUpdate,
         wardenApproval: {
-          status: "approved",
+          status: "approved" as "pending" | "approved" | "rejected",
           timestamp: new Date().toISOString(),
           comments: comments || "Approved",
           approvedBy: user?.name || ""
@@ -84,11 +84,11 @@ const WardenDashboard = () => {
     const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
     if (passToUpdate) {
-      const updatedPass = {
+      const updatedPass: GatePass = {
         ...passToUpdate,
-        status: "rejected",
+        status: "rejected" as "pending" | "approved" | "rejected",
         wardenApproval: {
-          status: "rejected",
+          status: "rejected" as "pending" | "approved" | "rejected",
           timestamp: new Date().toISOString(),
           comments: comments || "Rejected",
           approvedBy: user?.name || ""

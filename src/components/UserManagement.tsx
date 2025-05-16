@@ -66,6 +66,15 @@ const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
 
   return (
     <div className="rounded-md border">
+      <div className="bg-yellow-50 p-3 border-b border-yellow-200">
+        <p className="font-medium text-yellow-800">Phone Number Information</p>
+        <p className="text-sm text-yellow-700">
+          Default test number: <span className="font-medium">8778136006</span> is used for all students without a parent phone number.
+        </p>
+        <p className="text-sm text-yellow-700 mt-1">
+          Note: SMS messages are only simulated and not actually sent. Check console logs for simulated SMS activity.
+        </p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -103,7 +112,9 @@ const UserManagement = ({ users: initialUsers }: UserManagementProps) => {
                       className="max-w-[150px]"
                     />
                   ) : (
-                    user.parentPhoneNumber || "-"
+                    <span className={user.role === "student" ? "font-medium" : ""}>
+                      {user.parentPhoneNumber || (user.role === "student" ? "8778136006 (default)" : "-")}
+                    </span>
                   )}
                 </TableCell>
                 <TableCell>
