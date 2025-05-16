@@ -1,5 +1,5 @@
 
-import { GatePass, User } from "@/lib/types";
+import { GatePass, User, ApprovalStatus } from "@/lib/types";
 import { mockGatePasses } from "@/lib/mockData";
 
 const GATE_PASSES_KEY = "gate_passes";
@@ -36,6 +36,10 @@ export const addGatePass = (newPass: GatePass): GatePass => {
   const passes = getAllGatePasses();
   passes.unshift(newPass); // Add to beginning of array
   localStorage.setItem(GATE_PASSES_KEY, JSON.stringify(passes));
+  
+  // Log simulated SMS notification
+  console.log(`SIMULATED: SMS notification would be sent to ${newPass.parentPhoneNumber || "8778136006"} about new gate pass`);
+  
   return newPass;
 };
 
@@ -46,6 +50,14 @@ export const updateGatePass = (updatedPass: GatePass): GatePass => {
     pass.id === updatedPass.id ? updatedPass : pass
   );
   localStorage.setItem(GATE_PASSES_KEY, JSON.stringify(updatedPasses));
+  
+  // Log simulated SMS notification
+  if (updatedPass.status === "approved") {
+    console.log(`SIMULATED: SMS notification would be sent to ${updatedPass.parentPhoneNumber || "8778136006"} about approved gate pass`);
+  } else if (updatedPass.status === "rejected") {
+    console.log(`SIMULATED: SMS notification would be sent to ${updatedPass.parentPhoneNumber || "8778136006"} about rejected gate pass`);
+  }
+  
   return updatedPass;
 };
 
@@ -76,8 +88,18 @@ export const getPendingApprovalsByRole = (role: "tutor" | "warden" | "hod"): Gat
   return [];
 };
 
+// Helper function to create valid approval status
+export const createApprovalStatus = (status: "pending" | "approved" | "rejected", approverName?: string, comments?: string): ApprovalStatus => {
+  return {
+    status,
+    timestamp: status !== "pending" ? new Date().toISOString() : undefined,
+    comments: comments || undefined,
+    approvedBy: approverName || undefined
+  };
+};
+
 // Student credentials management
-interface StudentCredential {
+export interface StudentCredential {
   rollNo: string;
   password: string;
   name: string;
@@ -112,4 +134,12 @@ export const verifyStudentLogin = (rollNo: string, password: string): StudentCre
   const credentials = getAllStudentCredentials();
   const student = credentials.find(cred => cred.rollNo === rollNo && cred.password === password);
   return student || null;
+};
+
+// Function to view the current database state (for debugging/display purposes)
+export const getDatabaseState = () => {
+  return {
+    gatePasses: getAllGatePasses(),
+    studentCredentials: getAllStudentCredentials()
+  };
 };

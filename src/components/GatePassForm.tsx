@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { GatePass, User } from "@/lib/types";
 
 interface GatePassFormProps {
@@ -29,12 +30,20 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
     const now = new Date();
     
     if (from < now) {
-      toast.error("From date must be in the future");
+      toast({
+        variant: "destructive",
+        title: "Invalid Date",
+        description: "From date must be in the future"
+      });
       return false;
     }
     
     if (to < from) {
-      toast.error("To date must be after from date");
+      toast({
+        variant: "destructive",
+        title: "Invalid Date",
+        description: "To date must be after from date"
+      });
       return false;
     }
     
@@ -70,7 +79,8 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      parentNotified: false
+      parentNotified: false,
+      parentPhoneNumber: effectiveUser.parentPhoneNumber
     };
     
     // Simulate API delay
@@ -78,18 +88,25 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
       // Submit the gate pass
       onSubmit(newGatePass);
       
-      // Always show SMS notification with the test number
-      toast.success(`SMS notification sent to parent at ${effectiveUser.parentPhoneNumber}`, {
+      // Show SMS simulation notification
+      toast({
+        title: "SMS Notification Simulated",
+        description: `In a production environment, an SMS would be sent to ${effectiveUser.parentPhoneNumber}`,
         duration: 5000,
-        position: "top-center"
       });
+      
+      console.log(`SIMULATED: SMS notification sent to parent at ${effectiveUser.parentPhoneNumber}`);
       
       // Reset form
       setReason("");
       setFromDate("");
       setToDate("");
       setLoading(false);
-      toast.success("Gate pass application submitted successfully!");
+      
+      toast({
+        title: "Success",
+        description: "Gate pass application submitted successfully!"
+      });
     }, 1000);
   };
   
@@ -140,14 +157,15 @@ const GatePassForm = ({ user, onSubmit }: GatePassFormProps) => {
           <div className="bg-green-50 p-3 rounded-md text-sm border border-green-200">
             <p className="font-medium text-green-800">Parent Contact Information:</p>
             <p className="text-green-700 mt-1">Parent phone number: {effectiveUser.parentPhoneNumber}</p>
-            <p className="text-gray-500 mt-1">SMS notification will be sent to this number when you submit.</p>
+            <p className="text-gray-500 mt-1">SMS notification will be simulated when you submit.</p>
             <p className="text-blue-600 font-medium mt-2">TEST NUMBER ACTIVE: 8778136006</p>
+            <p className="text-red-500 italic mt-1">Note: No actual SMS messages are sent in this demo application.</p>
           </div>
           
           <div className="bg-muted p-3 rounded-md text-sm">
             <p className="font-medium">Note:</p>
             <ul className="list-disc list-inside space-y-1 mt-1">
-              <li>Parent will be notified once you submit this form</li>
+              <li>Parent notification is simulated (check console logs)</li>
               <li>Approval process: Tutor → Warden → HOD</li>
               <li>QR code will be generated after final approval</li>
             </ul>

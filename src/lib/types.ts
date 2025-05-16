@@ -29,6 +29,7 @@ export interface GatePass {
   updatedAt: string;
   parentNotified: boolean;
   qrCode?: string;
+  parentPhoneNumber?: string; // Added to store the parent's phone number
 }
 
 export interface ApprovalStatus {

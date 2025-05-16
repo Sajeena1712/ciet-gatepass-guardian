@@ -4,34 +4,44 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { GatePass, User } from "@/lib/types";
 import GatePassForm from "@/components/GatePassForm";
 import LeaveHistory from "@/components/LeaveHistory";
 import LeaveCounter from "@/components/LeaveCounter";
-import { LogOut, QrCode, User as UserIcon } from "lucide-react";
+import { LogOut, QrCode, User as UserIcon, Database } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { addGatePass, getPassesByStudentId } from "@/services/gatePassService";
+import DatabaseViewer from "@/components/DatabaseViewer";
 
 const StudentDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [gatePasses, setGatePasses] = useState<GatePass[]>([]);
   const [selectedPass, setSelectedPass] = useState<GatePass | null>(null);
   const [showQrDialog, setShowQrDialog] = useState(false);
+  const [showDatabaseDialog, setShowDatabaseDialog] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
     // Get user from local storage
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
-      toast.error("Please login first");
+      toast({
+        variant: "destructive",
+        title: "Not logged in",
+        description: "Please login first"
+      });
       navigate('/login');
       return;
     }
     
     const userData = JSON.parse(storedUser) as User;
     if (userData.role !== "student") {
-      toast.error("Unauthorized access");
+      toast({
+        variant: "destructive",
+        title: "Unauthorized",
+        description: "Unauthorized access"
+      });
       navigate('/login');
       return;
     }
@@ -45,7 +55,10 @@ const StudentDashboard = () => {
   
   const handleLogout = () => {
     localStorage.removeItem('user');
-    toast.success("Logged out successfully");
+    toast({
+      title: "Success",
+      description: "Logged out successfully"
+    });
     navigate('/login');
   };
   
@@ -93,6 +106,15 @@ const StudentDashboard = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-blue-700"
+              onClick={() => setShowDatabaseDialog(true)}
+            >
+              <Database className="h-5 w-5 mr-2" />
+              <span className="hidden md:inline">View Database</span>
+            </Button>
+            
             <div className="hidden md:flex items-center space-x-2">
               <UserIcon className="h-5 w-5" />
               <span>{user.name}</span>
@@ -191,6 +213,19 @@ const StudentDashboard = () => {
               </p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Database Viewer Dialog */}
+      <Dialog open={showDatabaseDialog} onOpenChange={setShowDatabaseDialog}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Database Viewer (localStorage)</DialogTitle>
+            <DialogDescription>
+              View the simulated database content stored in your browser's localStorage
+            </DialogDescription>
+          </DialogHeader>
+          <DatabaseViewer />
         </DialogContent>
       </Dialog>
     </div>
