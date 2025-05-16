@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { mockGatePasses } from "@/lib/mockData";
 import { GatePass, User } from "@/lib/types";
 import ApprovalQueue from "@/components/ApprovalQueue";
 import LeaveHistory from "@/components/LeaveHistory";
@@ -13,10 +12,11 @@ import { LogOut, User as UserIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { getAllGatePasses, getPendingApprovalsByRole, updateGatePass } from "@/services/gatePassService";
 
 const TutorDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [gatePasses, setGatePasses] = useState<GatePass[]>([...mockGatePasses]);
+  const [gatePasses, setGatePasses] = useState<GatePass[]>([]);
   const [selectedPass, setSelectedPass] = useState<GatePass | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [comments, setComments] = useState("");
@@ -39,6 +39,10 @@ const TutorDashboard = () => {
     }
     
     setUser(userData);
+    
+    // Load all gate passes
+    const allPasses = getAllGatePasses();
+    setGatePasses(allPasses);
   }, [navigate]);
   
   const handleLogout = () => {
@@ -48,52 +52,62 @@ const TutorDashboard = () => {
   };
   
   const handleApprove = (gatePassId: string) => {
-    setGatePasses(prevPasses => 
-      prevPasses.map(pass => {
-        if (pass.id === gatePassId) {
-          return {
-            ...pass,
-            tutorApproval: {
-              status: "approved",
-              timestamp: new Date().toISOString(),
-              comments: comments || "Approved",
-              approvedBy: user?.name || ""
-            },
-            updatedAt: new Date().toISOString()
-          };
-        }
-        return pass;
-      })
-    );
+    const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
-    toast.success("Gate pass approved successfully");
-    setShowViewDialog(false);
-    setComments("");
+    if (passToUpdate) {
+      const updatedPass = {
+        ...passToUpdate,
+        tutorApproval: {
+          status: "approved",
+          timestamp: new Date().toISOString(),
+          comments: comments || "Approved",
+          approvedBy: user?.name || ""
+        },
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Update in localStorage
+      updateGatePass(updatedPass);
+      
+      // Update local state
+      setGatePasses(prevPasses => 
+        prevPasses.map(pass => pass.id === gatePassId ? updatedPass : pass)
+      );
+      
+      toast.success("Gate pass approved successfully");
+      setShowViewDialog(false);
+      setComments("");
+    }
   };
   
   const handleReject = (gatePassId: string) => {
-    setGatePasses(prevPasses => 
-      prevPasses.map(pass => {
-        if (pass.id === gatePassId) {
-          return {
-            ...pass,
-            status: "rejected",
-            tutorApproval: {
-              status: "rejected",
-              timestamp: new Date().toISOString(),
-              comments: comments || "Rejected",
-              approvedBy: user?.name || ""
-            },
-            updatedAt: new Date().toISOString()
-          };
-        }
-        return pass;
-      })
-    );
+    const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
-    toast.success("Gate pass rejected");
-    setShowViewDialog(false);
-    setComments("");
+    if (passToUpdate) {
+      const updatedPass = {
+        ...passToUpdate,
+        status: "rejected",
+        tutorApproval: {
+          status: "rejected",
+          timestamp: new Date().toISOString(),
+          comments: comments || "Rejected",
+          approvedBy: user?.name || ""
+        },
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Update in localStorage
+      updateGatePass(updatedPass);
+      
+      // Update local state
+      setGatePasses(prevPasses => 
+        prevPasses.map(pass => pass.id === gatePassId ? updatedPass : pass)
+      );
+      
+      toast.success("Gate pass rejected");
+      setShowViewDialog(false);
+      setComments("");
+    }
   };
   
   const handleViewPass = (pass: GatePass) => {

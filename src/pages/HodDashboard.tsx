@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { mockGatePasses } from "@/lib/mockData";
 import { GatePass, User } from "@/lib/types";
 import ApprovalQueue from "@/components/ApprovalQueue";
 import LeaveHistory from "@/components/LeaveHistory";
@@ -13,10 +12,11 @@ import { LogOut, User as UserIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { getAllGatePasses, getPendingApprovalsByRole, updateGatePass } from "@/services/gatePassService";
 
 const HodDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [gatePasses, setGatePasses] = useState<GatePass[]>([...mockGatePasses]);
+  const [gatePasses, setGatePasses] = useState<GatePass[]>([]);
   const [selectedPass, setSelectedPass] = useState<GatePass | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [comments, setComments] = useState("");
@@ -39,6 +39,10 @@ const HodDashboard = () => {
     }
     
     setUser(userData);
+    
+    // Load all gate passes
+    const allPasses = getAllGatePasses();
+    setGatePasses(allPasses);
   }, [navigate]);
   
   const handleLogout = () => {
@@ -48,55 +52,65 @@ const HodDashboard = () => {
   };
   
   const handleApprove = (gatePassId: string) => {
-    setGatePasses(prevPasses => 
-      prevPasses.map(pass => {
-        if (pass.id === gatePassId) {
-          return {
-            ...pass,
-            status: "approved", // Final approval
-            hodApproval: {
-              status: "approved",
-              timestamp: new Date().toISOString(),
-              comments: comments || "Approved",
-              approvedBy: user?.name || ""
-            },
-            updatedAt: new Date().toISOString(),
-            // Generate fake QR code for demo
-            qrCode: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAklEQVR4AewaftIAAAKzSURBVO3BQa7jSAwFwX6E7n/lHC+5KkCQ7ZkPZkT8g7XeYq23WOst1nqLtd5irbc"
-          };
-        }
-        return pass;
-      })
-    );
+    const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
-    toast.success("Gate pass approved and QR code generated");
-    setShowViewDialog(false);
-    setComments("");
+    if (passToUpdate) {
+      const updatedPass = {
+        ...passToUpdate,
+        status: "approved", // Final approval
+        hodApproval: {
+          status: "approved",
+          timestamp: new Date().toISOString(),
+          comments: comments || "Approved",
+          approvedBy: user?.name || ""
+        },
+        updatedAt: new Date().toISOString(),
+        // Generate fake QR code for demo
+        qrCode: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAklEQVR4AewaftIAAAKzSURBVO3BQa7jSAwFwX6E7n/lHC+5KkCQ7ZkPZkT8g7XeYq23WOst1nqLtd5irbc"
+      };
+      
+      // Update in localStorage
+      updateGatePass(updatedPass);
+      
+      // Update local state
+      setGatePasses(prevPasses => 
+        prevPasses.map(pass => pass.id === gatePassId ? updatedPass : pass)
+      );
+      
+      toast.success("Gate pass approved and QR code generated");
+      setShowViewDialog(false);
+      setComments("");
+    }
   };
   
   const handleReject = (gatePassId: string) => {
-    setGatePasses(prevPasses => 
-      prevPasses.map(pass => {
-        if (pass.id === gatePassId) {
-          return {
-            ...pass,
-            status: "rejected",
-            hodApproval: {
-              status: "rejected",
-              timestamp: new Date().toISOString(),
-              comments: comments || "Rejected",
-              approvedBy: user?.name || ""
-            },
-            updatedAt: new Date().toISOString()
-          };
-        }
-        return pass;
-      })
-    );
+    const passToUpdate = gatePasses.find(pass => pass.id === gatePassId);
     
-    toast.success("Gate pass rejected");
-    setShowViewDialog(false);
-    setComments("");
+    if (passToUpdate) {
+      const updatedPass = {
+        ...passToUpdate,
+        status: "rejected",
+        hodApproval: {
+          status: "rejected",
+          timestamp: new Date().toISOString(),
+          comments: comments || "Rejected",
+          approvedBy: user?.name || ""
+        },
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Update in localStorage
+      updateGatePass(updatedPass);
+      
+      // Update local state
+      setGatePasses(prevPasses => 
+        prevPasses.map(pass => pass.id === gatePassId ? updatedPass : pass)
+      );
+      
+      toast.success("Gate pass rejected");
+      setShowViewDialog(false);
+      setComments("");
+    }
   };
   
   const handleViewPass = (pass: GatePass) => {

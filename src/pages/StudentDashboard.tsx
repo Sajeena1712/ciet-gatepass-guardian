@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { mockGatePasses } from "@/lib/mockData";
 import { GatePass, User } from "@/lib/types";
 import GatePassForm from "@/components/GatePassForm";
 import LeaveHistory from "@/components/LeaveHistory";
 import LeaveCounter from "@/components/LeaveCounter";
 import { LogOut, QrCode, User as UserIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { addGatePass, getPassesByStudentId } from "@/services/gatePassService";
 
 const StudentDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -38,10 +38,8 @@ const StudentDashboard = () => {
     
     setUser(userData);
     
-    // Filter gate passes for this student
-    const studentPasses = mockGatePasses.filter(pass => 
-      pass.studentId === userData.id
-    );
+    // Get gate passes for this student from localStorage
+    const studentPasses = getPassesByStudentId(userData.id);
     setGatePasses(studentPasses);
   }, [navigate]);
   
@@ -52,13 +50,17 @@ const StudentDashboard = () => {
   };
   
   const handleGatePassSubmit = (newPass: Partial<GatePass>) => {
-    // In a real app, this would be an API call
+    // Create a complete gate pass with ID
     const gatePassWithId: GatePass = {
       ...newPass as GatePass,
       id: `gp${Math.floor(Math.random() * 10000)}`
     };
     
-    setGatePasses([gatePassWithId, ...gatePasses]);
+    // Add to localStorage
+    const savedPass = addGatePass(gatePassWithId);
+    
+    // Update local state
+    setGatePasses([savedPass, ...gatePasses]);
   };
   
   const handleViewPass = (pass: GatePass) => {
